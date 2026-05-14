@@ -162,25 +162,34 @@ text-transform:uppercase; color:var(–muted); margin-bottom:12px;
 /* ── INPUTS ─────────────────────────────────────────── */
 .field-input {
 width:100%;
-background:rgba(255,255,255,0.05);
+background:rgba(255,255,255,0.07);
 border:1px solid var(–border-soft);
 border-radius:10px;
-color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px;
+color:var(–cream); font-family:‘Outfit’,sans-serif; font-size:14px;
 padding:11px 13px; outline:none; transition:border-color .15s, background .15s;
 }
-.field-input:focus { border-color:var(–rose); background:rgba(201,133,122,0.06); }
+.field-input:focus { border-color:var(–rose); background:rgba(201,133,122,0.08); }
 .field-input.error { border-color:var(–rose); }
-.field-input::placeholder { color:var(–muted2); }
+.field-input::placeholder { color:var(–muted); }
+/* Override Safari autofill yellow */
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus {
+-webkit-text-fill-color: var(–cream);
+-webkit-box-shadow: 0 0 0 1000px #2A1820 inset;
+transition: background-color 5000s ease-in-out 0s;
+caret-color: var(–cream);
+}
 
 .addr-row { display:flex; gap:8px; margin-top:8px; }
 .addr-street { flex:1.4; position:relative; }
 .addr-city-wrap { flex:1; position:relative; }
 .city-select {
 width:100%;
-background:rgba(255,255,255,0.05);
+background:rgba(255,255,255,0.07);
 border:1px solid var(–border-soft);
 border-radius:10px;
-color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px;
+color:var(–cream); font-family:‘Outfit’,sans-serif; font-size:14px;
 padding:11px 28px 11px 13px; outline:none;
 -webkit-appearance:none; appearance:none; cursor:pointer;
 transition:border-color .15s;
@@ -198,8 +207,8 @@ transition:border-color .15s;
 
 .time-row { display:flex; gap:10px; align-items:center; }
 .time-input {
-background:rgba(255,255,255,0.05); border:1px solid var(–border-soft);
-border-radius:10px; color:var(–text); font-family:‘Outfit’,sans-serif;
+background:rgba(255,255,255,0.07); border:1px solid var(–border-soft);
+border-radius:10px; color:var(–cream); font-family:‘Outfit’,sans-serif;
 font-size:15px; padding:11px 13px; width:136px; outline:none; -webkit-appearance:none;
 }
 .time-input:focus { border-color:var(–rose); }
@@ -240,11 +249,11 @@ font-size:11px; font-weight:500; color:var(–rose-light);
 .job-name-wrap { position:relative; }
 .job-name-input {
 width:100%; background:transparent; border:none;
-border-bottom:1px solid rgba(255,255,255,0.1);
-color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px;
+border-bottom:1px solid rgba(255,255,255,0.12);
+color:var(–cream); font-family:‘Outfit’,sans-serif; font-size:14px;
 padding:6px 0; outline:none; transition:border-color .15s;
 }
-.job-name-input::placeholder { color:var(–muted2); }
+.job-name-input::placeholder { color:var(–muted); }
 .job-name-input:focus { border-bottom-color:var(–rose); }
 .job-name-input.error { border-bottom-color:var(–rose); }
 
@@ -270,12 +279,13 @@ font-size:13px; cursor:pointer; margin-top:10px; transition:all .15s;
 
 .plan-btn {
 width:calc(100% - 36px); margin:4px 18px 0; padding:17px;
-background:linear-gradient(135deg, var(–rose) 0%, #A86060 100%);
+background:linear-gradient(135deg, #D4907A 0%, #A86060 100%);
 color:#fff; border:none; border-radius:16px;
 font-family:‘Fraunces’,serif; font-size:18px; font-weight:400;
 cursor:pointer; letter-spacing:.02em;
-box-shadow:0 4px 20px rgba(201,133,122,0.35);
+box-shadow:0 4px 24px rgba(201,133,122,0.4);
 transition:opacity .15s, transform .1s;
+-webkit-appearance:none;
 }
 .plan-btn:active { opacity:.85; transform:scale(.98); }
 
@@ -344,6 +354,34 @@ border:1px solid rgba(255,255,255,0.08); border-radius:14px;
 color:var(–muted); font-family:‘Outfit’,sans-serif; font-size:13px;
 cursor:pointer; margin-top:10px;
 }
+.actual-capture {
+border-top:1px solid rgba(255,255,255,0.06);
+padding-top:14px;
+}
+.actual-label {
+font-size:12px; font-weight:500; color:var(–muted);
+letter-spacing:.06em; text-transform:uppercase; margin-bottom:12px;
+}
+.actual-row {
+display:flex; align-items:center; justify-content:space-between;
+gap:10px; margin-bottom:10px;
+}
+.actual-name {
+font-size:13px; color:var(–cream); font-weight:500;
+flex-shrink:0; max-width:90px; overflow:hidden;
+text-overflow:ellipsis; white-space:nowrap;
+}
+.actual-btns { display:flex; gap:5px; flex:1; justify-content:flex-end; }
+.actual-btn {
+padding:5px 8px; border-radius:8px; border:1px solid;
+font-family:‘Outfit’,sans-serif; font-size:10px; font-weight:500;
+cursor:pointer; white-space:nowrap; transition:opacity .15s;
+letter-spacing:.03em;
+}
+.actual-btn:active { opacity:.7; }
+.actual-btn.under  { background:rgba(212,184,150,.1); border-color:var(–easy); color:var(–easy); }
+.actual-btn.ontime { background:rgba(201,133,122,.1); border-color:var(–rose); color:var(–rose-light); }
+.actual-btn.over   { background:rgba(139,67,86,.12); border-color:var(–heavy); color:#C47A90; }
 
 /* ── CLIENTS TAB ─────────────────────────────────────── */
 .add-client-form {
@@ -825,17 +863,131 @@ letter-spacing:.07em; text-transform:uppercase;
   restoreStart(); addJob(); addJob();
 
   // Plan
-  function recommendDep(mins,dow){
-    if(dow===0||dow===6)return{mins,reason:'Weekend — roads are clear. Leave whenever works for you.'};
-    if(mins>=7*60+30&&mins<9*60)return{mins:9*60+15,reason:'I-49 and 71B are congested 7:30–9 AM on weekdays. Leaving at 9:15 skips the worst of it.'};
-    if(mins<7*60+30)return{mins,reason:'Early start before peak traffic — great timing on I-49.'};
-    if(mins>=14*60+30&&mins<15*60+30)return{mins:15*60+45,reason:'Walmart HQ shift change causes Bentonville congestion around 3 PM. Slight delay avoids it.'};
-    return{mins,reason:'Clear traffic window — good time to be on the road.'};
+  function getWeatherContext(){
+    const w=document.getElementById('weatherWidget');
+    if(!w)return null;
+    const tempEl=w.querySelector('.w-temp');
+    const descEl=w.querySelector('.w-desc');
+    if(!tempEl||!descEl)return null;
+    const temp=parseInt(tempEl.textContent);
+    const desc=descEl.textContent.toLowerCase();
+    const isRain=desc.includes('rain')||desc.includes('drizzle')||desc.includes('storm')||desc.includes('shower');
+    const isIce=temp<=34&&(desc.includes('snow')||desc.includes('ice')||desc.includes('frost'));
+    const isFog=desc.includes('fog');
+    return{isRain,isIce,isFog,temp};
   }
+
+  function weatherTrafficNote(wx,peakWindow){
+    if(!wx)return'';
+    if(wx.isIce)return' Black ice is possible — allow extra time and drive carefully.';
+    if(wx.isRain&&peakWindow)return' Rain during peak hours makes I-49 significantly worse — consider extra buffer.';
+    if(wx.isRain)return' Wet roads will slow traffic slightly — allow a few extra minutes.';
+    if(wx.isFog)return' Fog can reduce visibility on I-49 — leave extra following distance.';
+    return'';
+  }
+
+  function recommendDep(mins,dow){
+    const isWknd = dow===0||dow===6;
+    if(isWknd) return{mins,reason:'Weekend — minimal traffic. Roads should be clear all day.'};
+
+    // Peak morning: 7:30–9:00 AM — push to 9:15
+    if(mins>=7*60+30 && mins<9*60)
+      return{mins:9*60+15,reason:'I-49 and 71B are heavily congested 7:30–9 AM. Pushing to 9:15 skips the worst of it and saves real time.'};
+
+    // Very early: before 7:00 AM — genuinely clear
+    if(mins<7*60)
+      return{mins,reason:'Nice early start — roads are quiet before 7 AM. Best window of the day.'};
+
+    // Early shoulder: 7:00–7:30 — light but building
+    if(mins<7*60+30)
+      return{mins,reason:'Traffic is light but starting to build. Beat most of the morning rush from here.'};
+
+    // Post-peak sweet spot: 9:15–11:30 — genuinely good
+    if(mins>=9*60+15 && mins<11*60+30)
+      return{mins,reason:'Good window — morning rush has cleared on I-49 and 71B. Smooth driving expected.'};
+
+    // Midday: 11:30–2:30 — neutral, moderate lunch traffic
+    if(mins>=11*60+30 && mins<14*60+30)
+      return{mins,reason:'Midday traffic is moderate — lunch hour can slow things around Walmart HQ and Rogers town center.'};
+
+    // Pre-afternoon peak: 2:30–3:00 — warning
+    if(mins>=14*60+30 && mins<15*60)
+      return{mins:15*60+45,reason:'Walmart HQ shift change hits at 3 PM and backs up Bentonville. Pushing to 3:45 avoids the worst of it.'};
+
+    // Afternoon peak: 3:00–6:00 PM — honest about congestion
+    if(mins>=15*60 && mins<18*60)
+      return{mins,reason:'Heads up — afternoon rush runs 3–6 PM on I-49. Expect slower going between Bentonville and Rogers.'};
+
+    // Evening: after 6:00 PM — clear again
+    return{mins,reason:'Evening traffic has died down. Roads should be clear at this hour.'};
+  }
+  function getActualAvg(difficulty){
+    // Pull from stored actual times if available
+    try{
+      const history = JSON.parse(localStorage.getItem('lucy-actuals')||'[]');
+      const relevant = history.filter(h=>h.difficulty===difficulty);
+      if(relevant.length<2) return null;
+      const avg = relevant.reduce((s,h)=>s+h.actualHours,0)/relevant.length;
+      return Math.round(avg*10)/10;
+    }catch{return null;}
+  }
+
+  function bufferNote(seq){
+    const notes=[];
+    seq.forEach(job=>{
+      const planned = JOB_HOURS[job.difficulty];
+      const avg = getActualAvg(job.difficulty);
+      if(avg && avg > planned+0.2){
+        const diff = Math.round((avg-planned)*60);
+        notes.push(`Your ${DIFF_LABEL[job.difficulty].toLowerCase()}s have been running about ${diff} min over estimate lately`);
+      }
+    });
+    const hasHeavy = seq.some(j=>j.difficulty==='heavy');
+    if(hasHeavy && !notes.length){
+      notes.push('Deep cleans often run 20–30 min over estimate — consider building in a small buffer');
+    }
+    return notes.length ? notes[0] + '.' : null;
+  }
+
   function energyNote(seq){
-    if(seq[0]?.difficulty==='heavy')return'Deep clean is first while your energy is highest — lighter work carries you through the afternoon.';
-    if(seq[seq.length-1]?.difficulty==='easy')return'Hardest jobs lead the day so fatigue works in your favor as the jobs get lighter.';
-    return'Jobs ordered to front-load effort and protect your energy through the day.';
+    const buffer = bufferNote(seq);
+    let base='';
+    if(seq[0]?.difficulty==='heavy') base='Deep clean is first while your energy is highest — lighter work carries you through the afternoon.';
+    else if(seq[seq.length-1]?.difficulty==='easy') base='Hardest jobs lead the day so fatigue works in your favor as the jobs get lighter.';
+    else base='Jobs ordered to front-load effort and protect your energy through the day.';
+    return buffer ? base + ' ' + buffer : base;
+  }
+
+  function buildActualRows(stops){
+    return stops.map(function(s,i){
+      var p=Math.round(JOB_HOURS[s.difficulty]*60);
+      var d=s.difficulty;
+      var n=esc(s.name);
+      return '<div class="actual-row">'
+        +'<span class="actual-name">'+n+'</span>'
+        +'<div class="actual-btns">'
+        +'<button class="actual-btn under" onclick="logActual('+i+',&quot;under&quot;,&quot;'+d+'&quot;,'+p+')">Finished early</button>'
+        +'<button class="actual-btn ontime" onclick="logActual('+i+',&quot;ontime&quot;,&quot;'+d+'&quot;,'+p+')">On time</button>'
+        +'<button class="actual-btn over" onclick="logActual('+i+',&quot;over&quot;,&quot;'+d+'&quot;,'+p+')">Ran over</button>'
+        +'</div></div>';
+    }).join('');
+  }
+
+  function logActual(idx, result, difficulty, plannedMins){
+    const adjustments = {under: -0.33, ontime: 0, over: 0.42};
+    const actualHours = Math.round((plannedMins/60 + adjustments[result])*10)/10;
+    try{
+      const history = JSON.parse(localStorage.getItem('lucy-actuals')||'[]');
+      history.push({difficulty, actualHours, date: new Date().toISOString().slice(0,10)});
+      // Keep last 20 entries only
+      if(history.length>20) history.shift();
+      localStorage.setItem('lucy-actuals', JSON.stringify(history));
+    }catch{}
+    // Visual feedback
+    const row = document.querySelectorAll('.actual-row')[idx];
+    if(row){
+      row.innerHTML=`<span class="actual-name" style="color:var(--rose-light)">✓ Logged</span>`;
+    }
   }
 
   function planDay(){
@@ -908,6 +1060,10 @@ letter-spacing:.07em; text-transform:uppercase;
       <div class="result-footer">
         <div class="energy-note">⚡ ${energyNote(stops)}</div>
         <a href="${mapsUrl}" target="_blank" class="maps-btn">Open Route in Google Maps →</a>
+        <div class="actual-capture" id="actualCapture" style="margin-top:14px;">
+          <div class="actual-label">How did today go? <span style="color:var(--muted);font-weight:300;font-size:11px;">(helps improve estimates)</span></div>
+          ${buildActualRows(stops)}
+        </div>
         <button class="reset-btn" onclick="document.getElementById('result').style.display='none';window.scrollTo({top:0,behavior:'smooth'})">← Edit Jobs</button>
       </div>`;
     document.getElementById('result').style.display='block';
