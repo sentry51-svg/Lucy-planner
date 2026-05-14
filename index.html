@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lucy's Day Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0D1B12; --card:#162118; --card2:#1C2A1F; --border:#2A3D2E;
+    --gold:#C8A45A; --gold-dim:#8A6D35; --cream:#EDE5D4; --muted:#5A7860;
+    --easy:#4CAF82; --medium:#C8A45A; --heavy:#C4622D; --text:#E2D9C8;
+    --rose:#C9857A; --rose-dim:#6B3F3A; --rose-light:#E8B4A8; --rose-bg:rgba(201,133,122,.1);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body { background:var(--bg); min-height:100vh; }
+  body { font-family:'Outfit',sans-serif; color:var(--text); max-width:460px; margin:0 auto; padding:0 0 60px; }
+
+/* HEADER */
+.header { padding:44px 24px 20px; position:relative; overflow:hidden; }
+.header::before { content:’’; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:radial-gradient(circle,rgba(200,164,90,.1) 0%,transparent 70%); pointer-events:none; }
+.header::after  { content:’’; position:absolute; bottom:-40px; left:-20px; width:150px; height:150px; background:radial-gradient(circle,rgba(201,133,122,.08) 0%,transparent 70%); pointer-events:none; }
+.header-eyebrow { font-size:10px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(–gold); margin-bottom:6px; }
+.header-title { font-family:‘Fraunces’,serif; font-size:30px; font-weight:600; color:var(–cream); line-height:1.15; }
+.header-title em { font-style:italic; color:var(–rose-light); }
+.header-day { font-size:13px; color:var(–muted); margin-top:5px; font-weight:300; }
+
+/* WEATHER WIDGET — top of app */
+.weather-widget {
+margin:0 20px 20px;
+background: linear-gradient(145deg, #1E2820 0%, #231D1F 100%);
+border:1px solid var(–rose-dim);
+border-radius:16px;
+padding:18px;
+position:relative;
+overflow:hidden;
+min-height:80px;
+}
+.weather-widget::before {
+content:’’; position:absolute; top:-30px; right:-30px;
+width:120px; height:120px;
+background:radial-gradient(circle, rgba(201,133,122,.18) 0%, transparent 65%);
+pointer-events:none;
+}
+.weather-widget::after {
+content:’’; position:absolute; bottom:-20px; left:-10px;
+width:80px; height:80px;
+background:radial-gradient(circle, rgba(200,164,90,.08) 0%, transparent 65%);
+pointer-events:none;
+}
+.w-loading { font-size:13px; color:var(–muted); font-style:italic; padding:8px 0; }
+.w-error   { font-size:12px; color:var(–rose); line-height:1.5; }
+
+.w-top { display:flex; align-items:flex-start; gap:14px; }
+.w-icon { font-size:48px; line-height:1; flex-shrink:0; filter:drop-shadow(0 2px 8px rgba(201,133,122,.25)); }
+.w-right { flex:1; }
+.w-temp {
+font-family:‘Fraunces’,serif; font-size:38px; font-weight:600;
+color:var(–rose-light); line-height:1;
+text-shadow: 0 0 20px rgba(232,180,168,.2);
+}
+.w-desc { font-size:14px; color:var(–cream); margin-top:3px; font-weight:400; }
+.w-feels { font-size:11px; color:var(–muted); margin-top:2px; font-weight:300; }
+
+.w-divider { height:1px; background:var(–rose-dim); margin:14px 0; opacity:.5; }
+
+.w-stats { display:flex; gap:0; }
+.w-stat { flex:1; text-align:center; }
+.w-stat + .w-stat { border-left:1px solid var(–rose-dim); opacity-border:.4; }
+.w-stat-val { font-size:13px; font-weight:500; color:var(–rose-light); }
+.w-stat-key { font-size:10px; color:var(–muted); margin-top:2px; letter-spacing:.06em; text-transform:uppercase; }
+
+.w-note {
+margin-top:14px;
+padding:10px 13px;
+background:var(–rose-bg);
+border:1px solid var(–rose-dim);
+border-radius:10px;
+font-size:12px;
+color:var(–rose-light);
+line-height:1.55;
+font-weight:400;
+}
+
+/* FORM SECTIONS */
+.section { padding:0 20px 22px; }
+.section-label { font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(–muted); margin-bottom:12px; }
+
+.field-input { width:100%; background:var(–card); border:1px solid var(–border); border-radius:8px; color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px; padding:10px 12px; outline:none; transition:border-color .15s; }
+.field-input:focus { border-color:var(–gold-dim); }
+.field-input.error { border-color:var(–rose); }
+.field-input::placeholder { color:var(–muted); }
+
+.addr-row { display:flex; gap:8px; margin-top:8px; }
+.addr-street { flex:1.4; }
+.addr-city-wrap { flex:1; position:relative; }
+.city-select { width:100%; background:var(–card); border:1px solid var(–border); border-radius:8px; color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px; padding:10px 28px 10px 12px; outline:none; -webkit-appearance:none; appearance:none; cursor:pointer; transition:border-color .15s; }
+.city-select:focus { border-color:var(–gold-dim); }
+.city-select.error { border-color:var(–rose); }
+.select-arrow { position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(–muted); font-size:10px; }
+.city-other { margin-top:6px; display:none; }
+.city-other.show { display:block; }
+
+.error-hint { font-size:11px; color:var(–rose-light); margin-top:4px; display:none; }
+.error-hint.show { display:block; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+.shake { animation:shake .3s ease; }
+
+.time-row { display:flex; gap:10px; align-items:center; }
+.time-input { background:var(–card); border:1px solid var(–border); border-radius:8px; color:var(–text); font-family:‘Outfit’,sans-serif; font-size:15px; padding:10px 12px; width:130px; outline:none; -webkit-appearance:none; }
+.time-input:focus { border-color:var(–gold-dim); }
+
+/* JOBS */
+.jobs-list { display:flex; flex-direction:column; gap:10px; }
+.job-card { background:var(–card); border:1px solid var(–border); border-radius:12px; padding:14px 14px 14px 46px; position:relative; }
+.job-num { position:absolute; top:14px; left:14px; width:22px; height:22px; background:var(–border); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(–muted); }
+.job-remove { position:absolute; top:10px; right:10px; background:none; border:none; color:var(–border); cursor:pointer; font-size:18px; line-height:1; padding:4px; }
+.job-remove:hover { color:var(–muted); }
+.job-name-input { width:100%; background:transparent; border:none; border-bottom:1px solid var(–border); color:var(–text); font-family:‘Outfit’,sans-serif; font-size:14px; padding:6px 0; outline:none; }
+.job-name-input::placeholder { color:var(–muted); }
+.job-name-input:focus { border-bottom-color:var(–gold-dim); }
+.job-name-input.error { border-bottom-color:var(–rose); }
+.difficulty-row { display:flex; gap:6px; margin-top:10px; }
+.diff-btn { flex:1; padding:7px 4px; border-radius:6px; border:1px solid var(–border); background:transparent; color:var(–muted); font-family:‘Outfit’,sans-serif; font-size:11px; font-weight:500; cursor:pointer; transition:all .15s; letter-spacing:.04em; }
+.diff-btn.easy.active   { background:rgba(76,175,130,.15); border-color:var(–easy); color:var(–easy); }
+.diff-btn.medium.active { background:rgba(200,164,90,.15); border-color:var(–medium); color:var(–medium); }
+.diff-btn.heavy.active  { background:rgba(196,98,45,.18); border-color:var(–heavy); color:var(–heavy); }
+.add-job-btn { width:100%; padding:12px; background:transparent; border:1px dashed var(–border); border-radius:12px; color:var(–muted); font-family:‘Outfit’,sans-serif; font-size:13px; cursor:pointer; margin-top:10px; transition:all .15s; }
+.add-job-btn:hover { border-color:var(–muted); color:var(–text); }
+.plan-btn { width:calc(100% - 40px); margin:4px 20px 0; padding:16px; background:var(–gold); color:var(–bg); border:none; border-radius:12px; font-family:‘Fraunces’,serif; font-size:17px; font-weight:600; cursor:pointer; letter-spacing:.02em; transition:background .15s,transform .1s; }
+.plan-btn:active { background:#A88440; transform:scale(.98); }
+
+/* RESULT */
+.result { margin:24px 20px 0; animation:fadeUp .4s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.result-header { background:var(–card2); border:1px solid var(–border); border-radius:14px 14px 0 0; padding:18px 18px 14px; border-bottom:none; }
+.depart-label { font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(–muted); margin-bottom:4px; }
+.depart-time { font-family:‘Fraunces’,serif; font-size:36px; font-weight:600; color:var(–gold); line-height:1; }
+.depart-reason { font-size:12px; color:var(–muted); margin-top:6px; line-height:1.5; font-weight:300; }
+.stats-row { display:flex; gap:1px; background:var(–border); margin-top:14px; border-radius:8px; overflow:hidden; }
+.stat { flex:1; background:var(–card); padding:10px 8px; text-align:center; }
+.stat-val { font-size:14px; font-weight:500; color:var(–cream); }
+.stat-key { font-size:10px; color:var(–muted); margin-top:2px; letter-spacing:.06em; text-transform:uppercase; }
+.result-stops { background:var(–card2); border:1px solid var(–border); border-top:none; padding:0 18px; }
+.stop-row { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(–border); align-items:flex-start; }
+.stop-row:last-child { border-bottom:none; }
+.stop-order { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:500; flex-shrink:0; margin-top:1px; }
+.stop-order.easy   { background:rgba(76,175,130,.2); color:var(–easy); }
+.stop-order.medium { background:rgba(200,164,90,.2); color:var(–medium); }
+.stop-order.heavy  { background:rgba(196,98,45,.2);  color:var(–heavy); }
+.stop-info { flex:1; min-width:0; }
+.stop-name  { font-size:15px; font-weight:500; color:var(–cream); }
+.stop-addr  { font-size:12px; color:var(–muted); margin-top:2px; }
+.stop-times { font-size:12px; color:var(–gold); margin-top:3px; }
+.stop-dur   { font-size:11px; color:var(–muted); margin-top:1px; }
+.stop-note  { font-size:11px; color:var(–muted); margin-top:3px; font-style:italic; }
+.result-footer { background:var(–card2); border:1px solid var(–border); border-top:1px solid var(–border); border-radius:0 0 14px 14px; padding:14px 18px; }
+.energy-note { font-size:12px; color:var(–muted); line-height:1.6; font-style:italic; }
+.maps-btn { display:block; width:100%; padding:15px; background:var(–gold); border:none; border-radius:12px; color:var(–bg); font-family:‘Outfit’,sans-serif; font-size:14px; font-weight:600; text-align:center; text-decoration:none; margin-top:12px; letter-spacing:.04em; }
+.maps-btn:active { opacity:.85; }
+.reset-btn { display:block; width:100%; padding:13px; background:transparent; border:1px solid var(–border); border-radius:12px; color:var(–muted); font-family:‘Outfit’,sans-serif; font-size:13px; cursor:pointer; margin-top:10px; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Morning Planner</div>
+  <div class="header-title">Plan <em>today</em><br>the smart way.</div>
+  <div class="header-day" id="dayDisplay"></div>
+</div>
+
+<!-- WEATHER WIDGET — always visible at top -->
+
+<div class="weather-widget" id="weatherWidget">
+  <div class="w-loading">Checking today's weather…</div>
+</div>
+
+<div class="section">
+  <div class="section-label">Earliest I can leave</div>
+  <div class="time-row">
+    <input type="time" class="time-input" id="startTime" value="08:00">
+    <label style="color:var(--muted);font-size:13px;">flexible ±30 min</label>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Starting from</div>
+  <div class="addr-row">
+    <input type="text" class="field-input addr-street" id="startStreet"
+      placeholder="Street address" oninput="clearErr('startStreet','startErr')">
+    <div class="addr-city-wrap">
+      <select class="city-select" id="startCity"
+        onchange="handleCityChange('startCity','startCityOther','startErr')">
+        <option value="">City…</option>
+        <option>Bentonville</option><option>Rogers</option><option>Centerton</option>
+        <option>Springdale</option><option>Fayetteville</option><option>Bella Vista</option>
+        <option>Cave Springs</option><option>Lowell</option><option>Pea Ridge</option>
+        <option>Siloam Springs</option><option value="other">Other…</option>
+      </select>
+      <span class="select-arrow">▾</span>
+      <input type="text" class="field-input city-other" id="startCityOther"
+        placeholder="Enter city" oninput="clearErr('startCityOther','startErr')">
+    </div>
+  </div>
+  <div class="error-hint" id="startErr">Street address and city are required.</div>
+</div>
+
+<div class="section">
+  <div class="section-label">Today's Jobs</div>
+  <div class="jobs-list" id="jobsList"></div>
+  <button class="add-job-btn" id="addJobBtn" onclick="addJob()">+ Add Job</button>
+</div>
+
+<button class="plan-btn" onclick="planDay()">Plan My Day</button>
+
+<div class="result" id="result" style="display:none;"></div>
+
+<script>
+  const CITIES=['Bentonville','Rogers','Centerton','Springdale','Fayetteville',
+                'Bella Vista','Cave Springs','Lowell','Pea Ridge','Siloam Springs'];
+  const DRIVE_MIN=15, JOB_HOURS={easy:1.5,medium:2.5,heavy:3.5};
+  const DIFF_ORDER={heavy:0,medium:1,easy:2};
+  const DIFF_EMOJI={easy:'🌿',medium:'🏠',heavy:'💪'};
+  const DIFF_LABEL={easy:'Light clean',medium:'Standard clean',heavy:'Deep clean'};
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const LAT=36.37, LON=-94.21;
+
+  let jobs=[], jobId=0;
+  const now=new Date();
+  document.getElementById('dayDisplay').textContent=
+    `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+
+  addJob(); addJob();
+
+  // ── Weather ───────────────────────────────────────────────────────
+  function wmoEmoji(c){
+    if(c===0)return'☀️';if(c<=2)return'🌤️';if(c===3)return'☁️';
+    if(c<=48)return'🌫️';if(c<=55)return'🌦️';if(c<=65)return'🌧️';
+    if(c<=75)return'❄️';if(c<=82)return'🌧️';if(c<=99)return'⛈️';return'🌡️';
+  }
+  function wmoDesc(c){
+    if(c===0)return'Clear skies';if(c<=2)return'Mostly clear';if(c===3)return'Overcast';
+    if(c<=48)return'Foggy';if(c<=55)return'Light drizzle';if(c<=65)return'Rainy';
+    if(c<=75)return'Snowy';if(c<=82)return'Rain showers';if(c<=99)return'Thunderstorms';
+    return'Mixed conditions';
+  }
+  function practicalNote(temp,feels,precip,wind,wmo){
+    if([95,96,99].includes(wmo))return'⛈️ Storms possible — check radar before heading out';
+    if(precip>=60)return'☔ Rain likely — keep an umbrella in the car';
+    if(precip>=35)return'🌂 Chance of rain — umbrella wouldn\'t hurt';
+    if(feels<32)return'🧥 Freezing — bundle up and warm the car first';
+    if(feels<48)return'🧥 Cold today — definitely bring a jacket';
+    if(feels<58)return'🧤 Chilly out — a light jacket is a good call';
+    if(temp>93)return'🥵 Hot day — keep water in the car and hydrate between jobs';
+    if(temp>84)return'☀️ Warm day — stay hydrated out there';
+    if(wind>25)return'💨 Gusty winds today — secure anything loose';
+    return'✨ Great conditions for a productive day';
+  }
+
+  async function loadWeather(){
+    const widget=document.getElementById('weatherWidget');
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`
+      +`&current=temperature_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m`
+      +`&daily=temperature_2m_max,temperature_2m_min`
+      +`&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FChicago&forecast_days=1`;
+    try {
+      const res=await fetch(url);
+      if(!res.ok){widget.innerHTML=`<div class="w-error">Weather unavailable (HTTP ${res.status})</div>`;return;}
+      const d=await res.json();
+      const c=d.current;
+      const temp=Math.round(c.temperature_2m);
+      const feels=Math.round(c.apparent_temperature);
+      const precip=c.precipitation_probability||0;
+      const wind=Math.round(c.windspeed_10m);
+      const wmo=c.weathercode;
+      const hi=Math.round(d.daily.temperature_2m_max[0]);
+      const lo=Math.round(d.daily.temperature_2m_min[0]);
+      const note=practicalNote(temp,feels,precip,wind,wmo);
+      widget.innerHTML=`
+        <div class="w-top">
+          <div class="w-icon">${wmoEmoji(wmo)}</div>
+          <div class="w-right">
+            <div class="w-temp">${temp}°F</div>
+            <div class="w-desc">${wmoDesc(wmo)}</div>
+            <div class="w-feels">Feels like ${feels}°</div>
+          </div>
+        </div>
+        <div class="w-divider"></div>
+        <div class="w-stats">
+          <div class="w-stat"><div class="w-stat-val">H ${hi}°</div><div class="w-stat-key">High</div></div>
+          <div class="w-stat"><div class="w-stat-val">L ${lo}°</div><div class="w-stat-key">Low</div></div>
+          <div class="w-stat"><div class="w-stat-val">${precip}%</div><div class="w-stat-key">Rain</div></div>
+          <div class="w-stat"><div class="w-stat-val">${wind} mph</div><div class="w-stat-key">Wind</div></div>
+        </div>
+        <div class="w-note">${note}</div>`;
+    } catch(e) {
+      widget.innerHTML=`<div class="w-error">Weather fetch failed: ${e.message||'network error'}<br><span style="font-size:10px;color:var(--muted)">Check connection and reload</span></div>`;
+    }
+  }
+
+  // Load weather immediately on page open
+  loadWeather();
+
+  // ── Jobs ──────────────────────────────────────────────────────────
+  function addJob(){
+    if(jobs.length>=4)return;
+    jobs.push({id:++jobId,name:'',street:'',city:'',cityOther:'',difficulty:'medium'});
+    renderJobs();
+    if(jobs.length>=4)document.getElementById('addJobBtn').style.display='none';
+  }
+  function removeJob(id){jobs=jobs.filter(j=>j.id!==id);renderJobs();document.getElementById('addJobBtn').style.display='';}
+  function setDiff(id,d){jobs=jobs.map(j=>j.id===id?{...j,difficulty:d}:j);renderJobs();}
+  function updateJob(id,f,v){jobs=jobs.map(j=>j.id===id?{...j,[f]:v}:j);}
+  function handleCityChange(sId,oId,eId){
+    const s=document.getElementById(sId),o=document.getElementById(oId);
+    s.value==='other'?(o.classList.add('show'),o.focus()):o.classList.remove('show');
+    clearErr(sId,eId);
+  }
+  function clearErr(fId,eId){document.getElementById(fId)?.classList.remove('error','shake');document.getElementById(eId)?.classList.remove('show');}
+  function markErr(fId,eId){const f=document.getElementById(fId);if(f){f.classList.add('error','shake');setTimeout(()=>f.classList.remove('shake'),350);}document.getElementById(eId)?.classList.add('show');}
+  function getCity(sId,oId){const s=document.getElementById(sId);return s?.value==='other'?(document.getElementById(oId)?.value||'').trim():s?.value||'';}
+  function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+  function minsToTime(m){const h=Math.floor(m/60),mn=m%60,ap=h>=12?'PM':'AM',h12=h%12||12;return`${h12}:${String(mn).padStart(2,'0')} ${ap}`;}
+  function timeToMins(s){const[h,m]=s.split(':').map(Number);return h*60+m;}
+
+  function renderJobs(){
+    document.getElementById('jobsList').innerHTML=jobs.map((j,i)=>`
+      <div class="job-card" id="jcard-${j.id}">
+        <div class="job-num">${i+1}</div>
+        ${jobs.length>1?`<button class="job-remove" onclick="removeJob(${j.id})">×</button>`:''}
+        <input class="job-name-input" id="jname-${j.id}" placeholder="Client name"
+          value="${esc(j.name)}" oninput="updateJob(${j.id},'name',this.value);clearErr('jname-${j.id}','jerr-${j.id}')">
+        <div class="addr-row" style="margin-top:8px;">
+          <input type="text" class="field-input addr-street" id="jstreet-${j.id}"
+            placeholder="Street address" value="${esc(j.street)}"
+            oninput="updateJob(${j.id},'street',this.value);clearErr('jstreet-${j.id}','jerr-${j.id}')">
+          <div class="addr-city-wrap">
+            <select class="city-select" id="jcity-${j.id}"
+              onchange="updateJob(${j.id},'city',this.value);handleCityChange('jcity-${j.id}','jcityother-${j.id}','jerr-${j.id}')">
+              <option value="">City…</option>
+              ${CITIES.map(c=>`<option${j.city===c?' selected':''}>${c}</option>`).join('')}
+              <option value="other"${j.city==='other'?' selected':''}>Other…</option>
+            </select>
+            <span class="select-arrow">▾</span>
+            <input type="text" class="field-input city-other${j.city==='other'?' show':''}"
+              id="jcityother-${j.id}" placeholder="Enter city" value="${esc(j.cityOther)}"
+              oninput="updateJob(${j.id},'cityOther',this.value);clearErr('jcityother-${j.id}','jerr-${j.id}')">
+          </div>
+        </div>
+        <div class="error-hint" id="jerr-${j.id}">Name, street and city are required.</div>
+        <div class="difficulty-row">
+          <button class="diff-btn easy ${j.difficulty==='easy'?'active':''}"   onclick="setDiff(${j.id},'easy')">🌿 Light</button>
+          <button class="diff-btn medium ${j.difficulty==='medium'?'active':''}" onclick="setDiff(${j.id},'medium')">🏠 Standard</button>
+          <button class="diff-btn heavy ${j.difficulty==='heavy'?'active':''}"  onclick="setDiff(${j.id},'heavy')">💪 Deep Clean</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Plan ──────────────────────────────────────────────────────────
+  function recommendDeparture(mins,dow){
+    const isWknd=dow===0||dow===6;
+    if(isWknd)return{mins,reason:'Weekend — roads are clear. Leave whenever works for you.'};
+    if(mins>=7*60+30&&mins<9*60)return{mins:9*60+15,reason:'I-49 and 71B are congested 7:30–9 AM on weekdays. Leaving at 9:15 skips the worst of it.'};
+    if(mins<7*60+30)return{mins,reason:'Early start before peak traffic — great timing on I-49.'};
+    if(mins>=14*60+30&&mins<15*60+30)return{mins:15*60+45,reason:'Walmart HQ shift change causes Bentonville congestion around 3 PM. Slight delay avoids it.'};
+    return{mins,reason:'Clear traffic window — good time to be on the road.'};
+  }
+  function energyNote(seq){
+    if(seq[0]?.difficulty==='heavy')return'Deep clean is first while your energy is highest — lighter work carries you through the afternoon.';
+    if(seq[seq.length-1]?.difficulty==='easy')return'Hardest jobs lead the day so fatigue works in your favor as the jobs get lighter.';
+    return'Jobs ordered to front-load effort and protect your energy through the day.';
+  }
+
+  function planDay(){
+    let err=false;
+    const ss=document.getElementById('startStreet').value.trim();
+    const sc=getCity('startCity','startCityOther');
+    if(!ss){markErr('startStreet','startErr');err=true;}
+    if(!sc){markErr('startCity','startErr');err=true;}
+
+    jobs.forEach(j=>{
+      ['name','street','city','cityOther'].forEach(f=>{
+        const el=document.getElementById(`j${f==='cityOther'?'cityother':f}-${j.id}`);
+        if(el)j[f]=f==='city'?el.value:el.value.trim();
+      });
+    });
+
+    const valid=jobs.filter(j=>{const c=j.city==='other'?j.cityOther:j.city;return j.name&&j.street&&c;});
+    jobs.filter(j=>j.name||j.street||j.city).forEach(j=>{
+      const c=j.city==='other'?j.cityOther:j.city;
+      if(!j.name){markErr(`jname-${j.id}`,`jerr-${j.id}`);err=true;}
+      if(!j.street){markErr(`jstreet-${j.id}`,`jerr-${j.id}`);err=true;}
+      if(!c){markErr(`jcity-${j.id}`,`jerr-${j.id}`);err=true;}
+    });
+
+    if(!valid.length){if(!err)alert('Add at least one complete job.');return;}
+    if(err)return;
+
+    const dow=now.getDay();
+    const dep=recommendDeparture(timeToMins(document.getElementById('startTime').value),dow);
+    const seq=[...valid].sort((a,b)=>DIFF_ORDER[a.difficulty]-DIFF_ORDER[b.difficulty]);
+
+    let cursor=dep.mins;
+    const stops=seq.map(job=>{
+      const city=job.city==='other'?job.cityOther:job.city;
+      const addr=`${job.street}, ${city}, AR`;
+      const dur=Math.round(JOB_HOURS[job.difficulty]*60);
+      const arr=cursor, dep2=arr+dur;
+      const notes={heavy:'Tackling the longest job fresh — smart energy management.',medium:'Mid-day pacing — steady effort.',easy:'Finishing light keeps the end of the day manageable.'};
+      cursor=dep2+DRIVE_MIN;
+      return{name:job.name,address:addr,difficulty:job.difficulty,arrival:minsToTime(arr),departure:minsToTime(dep2),duration:JOB_HOURS[job.difficulty]===1.5?'~1.5 hrs':JOB_HOURS[job.difficulty]===2.5?'~2.5 hrs':'~3.5 hrs',note:notes[job.difficulty]};
+    });
+
+    const finish=cursor-DRIVE_MIN;
+    const driveTotal=(stops.length-1)*DRIVE_MIN;
+    const startFull=`${ss}, ${sc}, AR`;
+    const mapsUrl=`https://www.google.com/maps/dir/${[startFull,...stops.map(s=>s.address)].map(encodeURIComponent).join('/')}`;
+
+    document.getElementById('result').innerHTML=`
+      <div class="result-header">
+        <div class="depart-label">Leave at</div>
+        <div class="depart-time">${minsToTime(dep.mins)}</div>
+        <div class="depart-reason">${esc(dep.reason)}</div>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-val">${minsToTime(finish)}</div><div class="stat-key">Done by</div></div>
+          <div class="stat"><div class="stat-val">${stops.length}</div><div class="stat-key">Stops</div></div>
+          ${stops.length>1?`<div class="stat"><div class="stat-val">~${driveTotal} min</div><div class="stat-key">Drive time</div></div>`:`<div class="stat"><div class="stat-val">1 stop</div><div class="stat-key">Today</div></div>`}
+        </div>
+      </div>
+      <div class="result-stops">${stops.map(s=>`
+        <div class="stop-row">
+          <div class="stop-order ${s.difficulty}">${DIFF_EMOJI[s.difficulty]}</div>
+          <div class="stop-info">
+            <div class="stop-name">${esc(s.name)}</div>
+            <div class="stop-addr">${esc(s.address)}</div>
+            <div class="stop-times">Arrive ${s.arrival} · Leave ${s.departure}</div>
+            <div class="stop-dur">${s.duration} · ${DIFF_LABEL[s.difficulty]}</div>
+            <div class="stop-note">${s.note}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div class="result-footer">
+        <div class="energy-note">⚡ ${energyNote(stops)}</div>
+        <a href="${mapsUrl}" target="_blank" class="maps-btn">Open Route in Google Maps →</a>
+        <button class="reset-btn" onclick="document.getElementById('result').style.display='none';window.scrollTo({top:0,behavior:'smooth'})">← Edit Jobs</button>
+      </div>`;
+    document.getElementById('result').style.display='block';
+    document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+</script>
+
+</body>
+</html>
