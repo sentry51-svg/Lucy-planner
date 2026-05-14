@@ -453,6 +453,113 @@ letter-spacing:.07em; text-transform:uppercase;
 
 .empty-state { text-align:center; padding:40px 20px; color:var(–muted); font-size:13px; line-height:1.7; }
 .empty-icon { font-size:36px; margin-bottom:12px; }
+
+/* ── SCHEDULE TAB ─────────────────────────────────────── */
+.week-nav {
+display:flex; align-items:center; justify-content:space-between;
+padding:0 18px 18px;
+}
+.week-nav-btn {
+background:rgba(255,255,255,0.05); border:1px solid var(–border-soft);
+border-radius:10px; color:var(–rose-light); font-size:16px;
+width:38px; height:38px; cursor:pointer; display:flex;
+align-items:center; justify-content:center; transition:background .15s;
+-webkit-appearance:none;
+}
+.week-nav-btn:active { background:var(–rose-bg); }
+.week-range {
+font-family:‘Fraunces’,serif; font-size:16px; font-weight:300;
+color:var(–cream); letter-spacing:.01em; text-align:center;
+}
+.day-cards { display:flex; flex-direction:column; gap:10px; padding:0 18px 20px; }
+.day-card {
+background:var(–card);
+backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+border:1px solid var(–border-soft);
+border-radius:16px; overflow:hidden;
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+.day-card.today { border-color:rgba(201,133,122,0.4); }
+.day-header {
+display:flex; align-items:center; justify-content:space-between;
+padding:12px 14px 10px;
+}
+.day-name-wrap { display:flex; align-items:baseline; gap:8px; }
+.day-name {
+font-size:13px; font-weight:500; color:var(–muted);
+letter-spacing:.08em; text-transform:uppercase;
+}
+.day-num {
+font-family:‘Fraunces’,serif; font-size:22px; font-weight:300;
+color:var(–cream); line-height:1;
+}
+.today .day-name { color:var(–rose); }
+.today .day-num { color:var(–rose-light); }
+.today-pill {
+font-size:9px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+background:var(–rose-bg); border:1px solid var(–rose-dim);
+color:var(–rose-light); padding:3px 8px; border-radius:20px;
+}
+.day-jobs { padding:0 14px 4px; }
+.day-job-row {
+display:flex; align-items:center; gap:10px;
+padding:8px 0; border-top:1px solid rgba(255,255,255,0.05);
+}
+.day-job-icon { font-size:14px; flex-shrink:0; }
+.day-job-info { flex:1; min-width:0; }
+.day-job-name { font-size:14px; font-weight:500; color:var(–cream); }
+.day-job-type { font-size:11px; color:var(–muted); margin-top:1px; }
+.day-empty {
+padding:10px 14px 14px;
+font-size:12px; color:var(–muted2); font-style:italic;
+}
+.day-plan-btn {
+display:block; width:calc(100% - 28px); margin:0 14px 14px;
+padding:10px; background:linear-gradient(135deg,rgba(201,133,122,0.2) 0%,rgba(139,67,86,0.2) 100%);
+border:1px solid rgba(201,133,122,0.3); border-radius:10px;
+color:var(–rose-light); font-family:‘Outfit’,sans-serif;
+font-size:13px; font-weight:500; cursor:pointer; text-align:center;
+letter-spacing:.04em; transition:background .15s; -webkit-appearance:none;
+}
+.day-plan-btn:active { background:var(–rose-bg); }
+
+/* Schedule editor on client cards */
+.client-schedule {
+margin-top:10px; padding-top:10px;
+border-top:1px solid rgba(255,255,255,0.06);
+}
+.sched-label {
+font-size:10px; font-weight:500; letter-spacing:.1em;
+text-transform:uppercase; color:var(–muted); margin-bottom:8px;
+}
+.sched-freq-row { display:flex; gap:6px; margin-bottom:10px; }
+.sched-freq-btn {
+flex:1; padding:6px 4px; border-radius:8px;
+border:1px solid rgba(255,255,255,0.08);
+background:transparent; color:var(–muted2);
+font-family:‘Outfit’,sans-serif; font-size:11px; font-weight:500;
+cursor:pointer; transition:all .15s; -webkit-appearance:none;
+}
+.sched-freq-btn.active {
+background:rgba(201,133,122,.12); border-color:var(–rose);
+color:var(–rose-light);
+}
+.sched-days-row { display:flex; gap:5px; }
+.sched-day-btn {
+flex:1; padding:7px 2px; border-radius:8px;
+border:1px solid rgba(255,255,255,0.08);
+background:transparent; color:var(–muted2);
+font-family:‘Outfit’,sans-serif; font-size:11px; font-weight:500;
+cursor:pointer; transition:all .15s; text-align:center; -webkit-appearance:none;
+}
+.sched-day-btn.active {
+background:rgba(201,133,122,.15); border-color:var(–rose);
+color:var(–rose-light);
+}
+.sched-biweekly-note {
+font-size:11px; color:var(–muted); margin-top:8px;
+font-style:italic; line-height:1.5;
+}
 </style>
 
 </head>
@@ -669,12 +776,28 @@ letter-spacing:.07em; text-transform:uppercase;
   </div>
 </div>
 
+<!-- TAB: SCHEDULE -->
+
+<div class="tab" id="tab-schedule">
+  <div class="week-nav">
+    <button class="week-nav-btn" onclick="changeWeek(-1)">‹</button>
+    <div class="week-range" id="weekRange"></div>
+    <button class="week-nav-btn" onclick="changeWeek(1)">›</button>
+  </div>
+  <div class="day-cards" id="dayCards"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 
 <nav class="bottom-nav">
   <button class="nav-btn active" id="nav-plan" onclick="switchTab('plan')">
     <span class="nav-icon">🗓</span>
     <span>Plan</span>
+    <span class="nav-dot"></span>
+  </button>
+  <button class="nav-btn" id="nav-schedule" onclick="switchTab('schedule')">
+    <span class="nav-icon">📅</span>
+    <span>Schedule</span>
     <span class="nav-dot"></span>
   </button>
   <button class="nav-btn" id="nav-clients" onclick="switchTab('clients')">
@@ -712,6 +835,7 @@ letter-spacing:.07em; text-transform:uppercase;
     document.getElementById('tab-'+n).classList.add('active');
     document.getElementById('nav-'+n).classList.add('active');
     if(n==='clients')renderRoster();
+    if(n==='schedule')renderScheduleTab();
   }
 
   // Weather
@@ -785,13 +909,15 @@ letter-spacing:.07em; text-transform:uppercase;
   function renderRoster(){
     const cl=getClients(),el=document.getElementById('clientRoster');
     if(!cl.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🌸</div>No clients saved yet.<br>Add your first client above.</div>`;return;}
-    el.innerHTML=cl.map(c=>`
-      <div class="client-card">
-        <div class="client-card-name">${esc(c.name)}</div>
-        <div class="client-card-addr">${esc(c.street)}, ${esc(c.city)}, AR</div>
-        <span class="client-card-type ${c.difficulty}">${DIFF_LABEL[c.difficulty]}</span>
-        <button class="client-delete" onclick="deleteClient(${c.id})">×</button>
-      </div>`).join('');
+    el.innerHTML=cl.map(function(c){
+      return '<div class="client-card">'
+        +'<div class="client-card-name">'+esc(c.name)+'</div>'
+        +'<div class="client-card-addr">'+esc(c.street)+', '+esc(c.city)+', AR</div>'
+        +'<span class="client-card-type '+c.difficulty+'">'+DIFF_LABEL[c.difficulty]+'</span>'
+        +'<button class="client-delete" onclick="deleteClient('+c.id+')">×</button>'
+        +renderClientScheduleEditor(c)
+        +'</div>';
+    }).join('');
   }
 
   // Autocomplete
@@ -901,7 +1027,18 @@ letter-spacing:.07em; text-transform:uppercase;
       else{sel.value='other';const o=document.getElementById('startCityOther');o.value=s.city;o.classList.add('show');}
     }
   }
-  restoreStart(); addJob(); addJob();
+  // Safe init after DOM ready
+  function initApp(){
+    restoreStart();
+    addJob();
+    addJob();
+    setTimeout(updateDepPreview, 150);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 
   // Plan
   function getWeatherContext(){
@@ -1130,9 +1267,252 @@ letter-spacing:.07em; text-transform:uppercase;
     document.getElementById('result').style.display='block';
     document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
   }
-  // Run preview on load after everything is defined
-  setTimeout(updateDepPreview, 200);
-</script>
+  // ── Schedule ──────────────────────────────────────────────────
+  var schedWeekOffset = 0;
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DAY_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-</body>
-</html>
+  function getMondayOfWeek(date){
+    var d = new Date(date);
+    var day = d.getDay();
+    var diff = day===0 ? -6 : 1-day;
+    d.setDate(d.getDate()+diff);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function getWeekDates(offset){
+    var monday = getMondayOfWeek(now);
+    monday.setDate(monday.getDate() + offset*7);
+    var dates = [];
+    for(var i=0;i<7;i++){
+      var d = new Date(monday);
+      d.setDate(d.getDate()+i);
+      dates.push(d);
+    }
+    return dates;
+  }
+
+  function isoDate(d){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function isOnWeek(biweeklyRef, date){
+    // Returns true if date's week is an "on" week relative to biweeklyRef
+    var ref = getMondayOfWeek(new Date(biweeklyRef));
+    var cur = getMondayOfWeek(new Date(date));
+    var diff = Math.round((cur-ref)/(7*24*60*60*1000));
+    return diff%2===0;
+  }
+
+  function isScheduledOn(client, date){
+    if(!client.schedule||client.schedule.frequency==='none')return false;
+    var dow = date.getDay();
+    var days = client.schedule.days||[];
+    if(!days.includes(dow))return false;
+    if(client.schedule.frequency==='weekly')return true;
+    if(client.schedule.frequency==='biweekly'){
+      var ref = client.schedule.biweeklyRef||isoDate(getMondayOfWeek(now));
+      return isOnWeek(ref, date);
+    }
+    return false;
+  }
+
+  function getClientsForDate(date){
+    return getClients().filter(c=>isScheduledOn(c,date));
+  }
+
+  function changeWeek(dir){
+    schedWeekOffset += dir;
+    renderScheduleTab();
+  }
+
+  function planFromSchedule(dateStr){
+    var date = new Date(dateStr+'T12:00:00');
+    var scheduled = getClientsForDate(date);
+    if(!scheduled.length){alert('No clients scheduled for this day.');return;}
+    // Reset jobs and load from schedule
+    jobs = [];
+    jobId = 0;
+    scheduled.forEach(function(c){
+      jobs.push({id:++jobId,name:c.name,street:c.street,city:c.city,cityOther:'',difficulty:c.difficulty});
+    });
+    // Switch to plan tab and re-render
+    switchTab('plan');
+    renderJobs();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function renderScheduleTab(){
+    var dates = getWeekDates(schedWeekOffset);
+    var todayStr = isoDate(now);
+
+    // Week range header
+    var first = dates[0], last = dates[5];
+    var rangeStr = MONTHS[first.getMonth()]+' '+first.getDate();
+    if(first.getMonth()!==last.getMonth()) rangeStr += ' – '+MONTHS[last.getMonth()]+' '+last.getDate();
+    else rangeStr += '–'+last.getDate();
+    rangeStr += ', '+first.getFullYear();
+    document.getElementById('weekRange').textContent = rangeStr;
+
+    var html = '';
+    dates.forEach(function(date){
+      var ds = isoDate(date);
+      var isToday = ds===todayStr;
+      var dayClients = getClientsForDate(date);
+      var isEmpty = dayClients.length===0;
+
+      html += '<div class="day-card'+(isToday?' today':'')+'">';
+      html += '<div class="day-header">';
+      html += '<div class="day-name-wrap">';
+      html += '<span class="day-name">'+DAY_NAMES[date.getDay()]+'</span>';
+      html += '<span class="day-num">'+date.getDate()+'</span>';
+      html += '</div>';
+      if(isToday) html += '<span class="today-pill">Today</span>';
+      html += '</div>';
+
+      if(isEmpty){
+        html += '<div class="day-empty">No jobs scheduled</div>';
+      } else {
+        html += '<div class="day-jobs">';
+        dayClients.forEach(function(c){
+          html += '<div class="day-job-row">';
+          html += '<span class="day-job-icon">'+DIFF_EMOJI[c.difficulty]+'</span>';
+          html += '<div class="day-job-info">';
+          html += '<div class="day-job-name">'+esc(c.name)+'</div>';
+          html += '<div class="day-job-type">'+DIFF_LABEL[c.difficulty]+'</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+        html += '<button class="day-plan-btn" onclick="planFromSchedule(&quot;'+ds+'&quot;)">Plan this day →</button>';
+      }
+      html += '</div>';
+    });
+
+    document.getElementById('dayCards').innerHTML = html;
+  }
+
+  // ── Client schedule editing ───────────────────────────────────
+  function updateClientSchedule(id, field, value){
+    var clients = getClients();
+    clients = clients.map(function(c){
+      if(c.id!==id)return c;
+      if(!c.schedule)c.schedule={frequency:'none',days:[],biweeklyRef:isoDate(getMondayOfWeek(now))};
+      if(field==='frequency'){
+        c.schedule.frequency=value;
+        if(value==='biweekly'&&!c.schedule.biweeklyRef)
+          c.schedule.biweeklyRef=isoDate(getMondayOfWeek(now));
+      } else if(field==='day'){
+        var days=c.schedule.days||[];
+        var idx=days.indexOf(value);
+        if(idx>=0)days.splice(idx,1); else days.push(value);
+        c.schedule.days=days;
+      }
+      return c;
+    });
+    saveClients(clients);
+    renderRoster();
+  }
+
+  function renderClientScheduleEditor(c){
+    var sched=c.schedule||{frequency:'none',days:[],biweeklyRef:''};
+    var freq=sched.frequency||'none';
+    var days=sched.days||[];
+    var cid=c.id;
+    var html='<div class="client-schedule">';
+    html+='<div class="sched-label">Recurring Schedule</div>';
+    html+='<div class="sched-freq-row">';
+    var freqs=[['none','None'],['weekly','Weekly'],['biweekly','Biweekly']];
+    freqs.forEach(function(pair){
+      var f=pair[0],label=pair[1];
+      var act=freq===f?' active':'';
+      html+='<button class="sched-freq-btn'+act+'" onclick="updateClientSchedule('+cid+',&quot;frequency&quot;,&quot;'+f+'&quot;)">'+label+'</button>';
+    });
+    html+='</div>';
+    if(freq!=='none'){
+      html+='<div class="sched-days-row">';
+      var dayPairs=[[1,'M'],[2,'T'],[3,'W'],[4,'T'],[5,'F'],[6,'S'],[0,'Su']];
+      dayPairs.forEach(function(pair){
+        var dow=pair[0],lbl=pair[1];
+        var act=days.includes(dow)?' active':'';
+        html+='<button class="sched-day-btn'+act+'" onclick="updateClientSchedule('+cid+',&quot;day&quot;,'+dow+')">'+lbl+'</button>';
+      });
+      html+='</div>';
+      if(freq==='biweekly'){
+        html+='<div class="sched-biweekly-note">Every other week. This week is an &quot;on&quot; week when you first set this up. Use the Schedule tab arrows to verify.</div>';
+      }
+    }
+    html+='</div>';
+    return html;
+  }
+
+    function renderScheduleTab(){
+    var dates = getWeekDates(schedWeekOffset);
+    var todayStr = isoDate(now);
+
+    // Week range header
+    var first = dates[0], last = dates[5];
+    var rangeStr = MONTHS[first.getMonth()]+' '+first.getDate();
+    if(first.getMonth()!==last.getMonth()) rangeStr += ' – '+MONTHS[last.getMonth()]+' '+last.getDate();
+    else rangeStr += '–'+last.getDate();
+    rangeStr += ', '+first.getFullYear();
+    document.getElementById('weekRange').textContent = rangeStr;
+
+    var html = '';
+    dates.forEach(function(date){
+      var ds = isoDate(date);
+      var isToday = ds===todayStr;
+      var dayClients = getClientsForDate(date);
+      var isEmpty = dayClients.length===0;
+
+      html += '<div class="day-card'+(isToday?' today':'')+'">';
+      html += '<div class="day-header">';
+      html += '<div class="day-name-wrap">';
+      html += '<span class="day-name">'+DAY_NAMES[date.getDay()]+'</span>';
+      html += '<span class="day-num">'+date.getDate()+'</span>';
+      html += '</div>';
+      if(isToday) html += '<span class="today-pill">Today</span>';
+      html += '</div>';
+
+      if(isEmpty){
+        html += '<div class="day-empty">No jobs scheduled</div>';
+      } else {
+        html += '<div class="day-jobs">';
+        dayClients.forEach(function(c){
+          html += '<div class="day-job-row">';
+          html += '<span class="day-job-icon">'+DIFF_EMOJI[c.difficulty]+'</span>';
+          html += '<div class="day-job-info">';
+          html += '<div class="day-job-name">'+esc(c.name)+'</div>';
+          html += '<div class="day-job-type">'+DIFF_LABEL[c.difficulty]+'</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+        html += '<button class="day-plan-btn" onclick="planFromSchedule(&quot;'+ds+'&quot;)">Plan this day →</button>';
+      }
+      html += '</div>';
+    });
+
+    document.getElementById('dayCards').innerHTML = html;
+  }
+
+  // ── Client schedule editing ───────────────────────────────────
+  function updateClientSchedule(id, field, value){
+    var clients = getClients();
+    clients = clients.map(function(c){
+      if(c.id!==id)return c;
+      if(!c.schedule)c.schedule={frequency:'none',days:[],biweeklyRef:isoDate(getMondayOfWeek(now))};
+      if(field==='frequency'){
+        c.schedule.frequency=value;
+        if(value==='biweekly'&&!c.schedule.biweeklyRef)
+          c.schedule.biweeklyRef=isoDate(getMondayOfWeek(now));
+      } else if(field==='day'){
+        var days=c.schedule.days||[];
+        var idx=days.indexOf(value);
+        if(idx>=0)days.splice(idx,1); else days.push(value);
+        c.schedule.days=days;
+      }
+      return c;
+    });
+    saveClients(clients);
+    renderRoster();
+  }
