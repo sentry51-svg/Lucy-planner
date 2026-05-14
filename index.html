@@ -354,6 +354,30 @@ border:1px solid rgba(255,255,255,0.08); border-radius:14px;
 color:var(–muted); font-family:‘Outfit’,sans-serif; font-size:13px;
 cursor:pointer; margin-top:10px;
 }
+.dep-preview {
+background:rgba(201,133,122,0.07);
+border:1px solid rgba(201,133,122,0.2);
+border-radius:12px;
+padding:12px 14px;
+animation:fadeUp .25s ease;
+}
+.dep-preview-time {
+font-family:‘Fraunces’,serif;
+font-size:22px; font-weight:300;
+color:var(–rose-light); line-height:1;
+letter-spacing:-.01em;
+}
+.dep-preview-time span {
+font-size:11px; font-weight:400;
+color:var(–rose); margin-left:6px;
+letter-spacing:.08em; text-transform:uppercase;
+vertical-align:middle;
+}
+.dep-preview-reason {
+font-size:12px; color:var(–muted);
+margin-top:6px; line-height:1.5; font-weight:300;
+}
+
 .actual-capture {
 border-top:1px solid rgba(255,255,255,0.06);
 padding-top:14px;
@@ -396,11 +420,13 @@ box-shadow:0 2px 12px rgba(0,0,0,0.2);
 .form-label { font-size:11px; color:var(–muted); margin-bottom:5px; letter-spacing:.08em; text-transform:uppercase; }
 .save-client-btn {
 width:100%; padding:14px;
-background:linear-gradient(135deg,var(–rose) 0%,#A86060 100%);
-color:#fff; border:none; border-radius:12px;
+background:linear-gradient(135deg,#D4907A 0%,#A86060 100%) !important;
+color:#fff !important; border:none; border-radius:12px;
 font-family:‘Fraunces’,serif; font-size:16px; font-weight:400;
 cursor:pointer; margin-top:8px; letter-spacing:.02em;
 box-shadow:0 4px 16px rgba(201,133,122,0.3);
+-webkit-appearance:none; appearance:none;
+display:block;
 }
 .save-client-btn:active { opacity:.85; }
 
@@ -559,9 +585,11 @@ letter-spacing:.07em; text-transform:uppercase;
   <div class="section">
     <div class="section-label">Earliest I can leave</div>
     <div class="time-row">
-      <input type="time" class="time-input" id="startTime" value="08:00">
+      <input type="time" class="time-input" id="startTime" value="08:00"
+        oninput="updateDepPreview()" onchange="updateDepPreview()">
       <label style="color:var(--muted);font-size:13px;">flexible ±30 min</label>
     </div>
+    <div id="depPreview" style="margin-top:12px;"></div>
   </div>
 
   <div class="section">
@@ -810,7 +838,20 @@ letter-spacing:.07em; text-transform:uppercase;
   function getCity(sId,oId){const s=document.getElementById(sId);return s?.value==='other'?(document.getElementById(oId)?.value||'').trim():s?.value||'';}
   function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
   function minsToTime(m){const h=Math.floor(m/60),mn=m%60,ap=h>=12?'PM':'AM',h12=h%12||12;return`${h12}:${String(mn).padStart(2,'0')} ${ap}`;}
-  function timeToMins(s){const[h,m]=s.split(':').map(Number);return h*60+m;}
+  function timeToMins(s){
+    if(!s||typeof s!=='string')return 8*60;
+    // Handle both HH:MM (24h) and H:MM AM/PM (12h)
+    var clean=s.trim();
+    var isPM=clean.toLowerCase().includes('pm');
+    var isAM=clean.toLowerCase().includes('am');
+    clean=clean.replace(/[apm\s]/gi,'');
+    var parts=clean.split(':');
+    var h=parseInt(parts[0])||0;
+    var m=parseInt(parts[1])||0;
+    if(isPM&&h!==12)h+=12;
+    if(isAM&&h===12)h=0;
+    return h*60+m;
+  }
 
   function renderJobs(){
     document.getElementById('jobsList').innerHTML=jobs.map((j,i)=>`
@@ -887,41 +928,43 @@ letter-spacing:.07em; text-transform:uppercase;
   }
 
   function recommendDep(mins,dow){
-    const isWknd = dow===0||dow===6;
-    if(isWknd) return{mins,reason:'Weekend — minimal traffic. Roads should be clear all day.'};
+    const isWknd=dow===0||dow===6;
+    const wx=getWeatherContext();
+    const wxP=weatherTrafficNote(wx,true);
+    const wxN=weatherTrafficNote(wx,false);
 
-    // Peak morning: 7:30–9:00 AM — push to 9:15
-    if(mins>=7*60+30 && mins<9*60)
-      return{mins:9*60+15,reason:'I-49 and 71B are heavily congested 7:30–9 AM. Pushing to 9:15 skips the worst of it and saves real time.'};
+    if(isWknd){
+      if(dow===6&&mins>=12*60&&mins<17*60)
+        return{mins,reason:'Weekend traffic is generally light, but the Pinnacle Hills corridor in Rogers gets busy on Saturday afternoons. Allow extra time if heading that direction.'+wxN};
+      return{mins,reason:'Weekend — minimal traffic. Roads should be clear all day.'+wxN};
+    }
 
-    // Very early: before 7:00 AM — genuinely clear
+    if(mins<6*60+30)
+      return{mins,reason:'Very early start — roads are quiet and I-49 is clear. Best window of the day.'+wxN};
     if(mins<7*60)
-      return{mins,reason:'Nice early start — roads are quiet before 7 AM. Best window of the day.'};
-
-    // Early shoulder: 7:00–7:30 — light but building
+      return{mins,reason:'Roads are still light, but school zones in Bentonville and Rogers activate around 7 AM on school days. Watch for reduced speed limits near schools.'+wxN};
     if(mins<7*60+30)
-      return{mins,reason:'Traffic is light but starting to build. Beat most of the morning rush from here.'};
-
-    // Post-peak sweet spot: 9:15–11:30 — genuinely good
-    if(mins>=9*60+15 && mins<11*60+30)
-      return{mins,reason:'Good window — morning rush has cleared on I-49 and 71B. Smooth driving expected.'};
-
-    // Midday: 11:30–2:30 — neutral, moderate lunch traffic
-    if(mins>=11*60+30 && mins<14*60+30)
-      return{mins,reason:'Midday traffic is moderate — lunch hour can slow things around Walmart HQ and Rogers town center.'};
-
-    // Pre-afternoon peak: 2:30–3:00 — warning
-    if(mins>=14*60+30 && mins<15*60)
-      return{mins:15*60+45,reason:'Walmart HQ shift change hits at 3 PM and backs up Bentonville. Pushing to 3:45 avoids the worst of it.'};
-
-    // Afternoon peak: 3:00–6:00 PM — honest about congestion
-    if(mins>=15*60 && mins<18*60)
-      return{mins,reason:'Heads up — afternoon rush runs 3–6 PM on I-49. Expect slower going between Bentonville and Rogers.'};
-
-    // Evening: after 6:00 PM — clear again
-    return{mins,reason:'Evening traffic has died down. Roads should be clear at this hour.'};
+      return{mins,reason:'Morning traffic is building on I-49 and 71B. School zones are active 7–8:15 AM — allow extra time near Bentonville and Rogers schools.'+wxP};
+    if(mins<=9*60)
+      return{mins:9*60+15,reason:'Peak congestion window — I-49 and 71B are heavily backed up 7:30–9 AM. School zones also active. Pushing to 9:15 skips both and saves real time.'+wxP};
+    if(mins<9*60+15)
+      return{mins:9*60+15,reason:'Traffic is just starting to clear. Waiting until 9:15 avoids the tail end of the morning rush entirely.'+wxN};
+    if(mins<11*60+30)
+      return{mins,reason:'Good window — morning rush has fully cleared on I-49 and 71B. One of the smoothest driving windows of the day.'+wxN};
+    if(mins<13*60)
+      return{mins,reason:'Midday traffic is picking up — lunch hour brings extra congestion around Walmart HQ, the Bentonville square, and Rogers town center.'+wxN};
+    if(mins<14*60+30)
+      return{mins,reason:'Post-lunch window is reasonable. Traffic has calmed from the noon rush and the afternoon buildup has not started yet.'+wxN};
+    if(mins<15*60)
+      return{mins:15*60+45,reason:'School zones reactivate around 3 PM in Bentonville and Rogers, and the Walmart HQ shift change hits at the same time. Pushing to 3:45 avoids both.'+wxP};
+    if(mins<15*60+45)
+      return{mins:15*60+45,reason:'You are in the worst overlap — school dismissal and Walmart shift change together. Pushing to 3:45 is worth it.'+wxP};
+    if(mins<18*60)
+      return{mins,reason:'Afternoon rush is running on I-49 — expect slower traffic between Bentonville and Rogers until around 6 PM. Allow extra buffer between jobs.'+wxP};
+    return{mins,reason:'Evening traffic has cleared. Roads should be smooth at this hour.'+wxN};
   }
-  function getActualAvg(difficulty){
+
+    function getActualAvg(difficulty){
     // Pull from stored actual times if available
     try{
       const history = JSON.parse(localStorage.getItem('lucy-actuals')||'[]');
@@ -988,6 +1031,24 @@ letter-spacing:.07em; text-transform:uppercase;
     if(row){
       row.innerHTML=`<span class="actual-name" style="color:var(--rose-light)">✓ Logged</span>`;
     }
+  }
+
+  function updateDepPreview(){
+    const val = document.getElementById('startTime').value;
+    if(!val) return;
+    const mins = timeToMins(val);
+    const dow = now.getDay();
+    const dep = recommendDep(mins, dow);
+    const el = document.getElementById('depPreview');
+    if(!el) return;
+    const changed = dep.mins !== mins;
+    const timeStr = minsToTime(dep.mins);
+    el.innerHTML = '<div class="dep-preview">'
+      + '<div class="dep-preview-time">' + timeStr
+      + (changed ? '<span>Suggested</span>' : '<span>Good to go</span>')
+      + '</div>'
+      + '<div class="dep-preview-reason">' + dep.reason + '</div>'
+      + '</div>';
   }
 
   function planDay(){
@@ -1069,6 +1130,8 @@ letter-spacing:.07em; text-transform:uppercase;
     document.getElementById('result').style.display='block';
     document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
   }
+  // Run preview on load after everything is defined
+  setTimeout(updateDepPreview, 200);
 </script>
 
 </body>
