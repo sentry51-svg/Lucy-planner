@@ -6,6 +6,11 @@
 <title>Lucy Lu · Day Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lucy Lu">
+<meta name="theme-color" content="#100A0D">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23100A0D' rx='42'/%3E%3Ccircle cx='96' cy='96' r='60' fill='%23C9857A' opacity='.15'/%3E%3Cellipse cx='96' cy='72' rx='18' ry='32' fill='%23E8B4A8' opacity='.9' transform='rotate(0 96 96)'/%3E%3Cellipse cx='96' cy='72' rx='18' ry='32' fill='%23E8B4A8' opacity='.9' transform='rotate(72 96 96)'/%3E%3Cellipse cx='96' cy='72' rx='18' ry='32' fill='%23E8B4A8' opacity='.9' transform='rotate(144 96 96)'/%3E%3Cellipse cx='96' cy='72' rx='18' ry='32' fill='%23E8B4A8' opacity='.9' transform='rotate(216 96 96)'/%3E%3Cellipse cx='96' cy='72' rx='18' ry='32' fill='%23E8B4A8' opacity='.9' transform='rotate(288 96 96)'/%3E%3Ccircle cx='96' cy='96' r='18' fill='%238B4356'/%3E%3Ccircle cx='90' cy='90' r='7' fill='%23F0D0C0' opacity='.4'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg:#100A0D;
@@ -453,6 +458,34 @@
   .empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; line-height:1.7; }
   .empty-icon { font-size:36px; margin-bottom:12px; }
 
+  /* Data export/import */
+  .data-section {
+    margin-top:24px; padding-top:20px;
+    border-top:1px solid var(--border-soft);
+  }
+  .data-note {
+    font-size:12px; color:var(--muted); line-height:1.6;
+    margin-bottom:14px;
+  }
+  .data-btn-row { display:flex; gap:10px; }
+  .data-btn {
+    flex:1; padding:13px 8px; border-radius:12px;
+    font-family:'Outfit',sans-serif; font-size:13px; font-weight:500;
+    cursor:pointer; text-align:center; min-height:44px;
+    transition:opacity .15s; -webkit-appearance:none;
+    letter-spacing:.02em;
+  }
+  .export-btn {
+    background:var(--rose-bg); border:1px solid var(--rose-dim);
+    color:var(--rose-light);
+  }
+  .import-btn {
+    background:rgba(200,164,90,.08); border:1px solid rgba(200,164,90,.25);
+    color:var(--gold);
+  }
+  .data-btn:active { opacity:.7; }
+  .data-msg { font-size:12px; margin-top:10px; line-height:1.5; }
+
   /* ── SCHEDULE TAB ─────────────────────────────────────── */
   .week-nav {
     display:flex; align-items:center; justify-content:space-between;
@@ -477,7 +510,15 @@
     border:1px solid var(--border-soft);
     border-radius:16px; overflow:hidden;
     box-shadow:0 2px 10px rgba(0,0,0,0.2);
+    animation:fadeUp .35s ease both;
   }
+  .day-card:nth-child(1){animation-delay:.04s}
+  .day-card:nth-child(2){animation-delay:.08s}
+  .day-card:nth-child(3){animation-delay:.12s}
+  .day-card:nth-child(4){animation-delay:.16s}
+  .day-card:nth-child(5){animation-delay:.20s}
+  .day-card:nth-child(6){animation-delay:.24s}
+  .day-card:nth-child(7){animation-delay:.28s}
   .day-card.today { border-color:rgba(201,133,122,0.4); }
   .day-header {
     display:flex; align-items:center; justify-content:space-between;
@@ -787,7 +828,7 @@
     <button class="add-job-btn" id="addJobBtn" onclick="addJob()">+ Add Job</button>
   </div>
 
-  <button class="plan-btn" onclick="planDay()">Plan My Day</button>
+  <button class="plan-btn" onclick="haptic('medium');planDay()">Plan My Day</button>
   <div class="result" id="result" style="display:none;"></div>
 </div>
 
@@ -832,10 +873,21 @@
         <textarea class="field-input notes-input" id="nc-notes"
           placeholder="Gate code, dogs, key location, preferences…" rows="3"></textarea>
       </div>
-      <button class="save-client-btn" onclick="saveNewClient()">Save Client</button>
+      <button class="save-client-btn" onclick="haptic('medium');saveNewClient()">Save Client</button>
     </div>
     <div class="section-label" style="margin-bottom:14px;">Saved Clients</div>
     <div class="client-roster" id="clientRoster"></div>
+
+    <div class="data-section">
+      <div class="section-label" style="margin-bottom:12px;">Your Data</div>
+      <p class="data-note">Export saves your clients, schedule, and settings. Use it to back up your data or move to a new phone.</p>
+      <div class="data-btn-row">
+        <button class="data-btn export-btn" onclick="haptic('medium');exportData()">⬇ Export Data</button>
+        <button class="data-btn import-btn" onclick="haptic('medium');document.getElementById('importFile').click()">⬆ Import Data</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+      <div id="dataMsg" class="data-msg" style="display:none;"></div>
+    </div>
   </div>
 </div>
 
@@ -843,26 +895,26 @@
 <!-- TAB: SCHEDULE -->
 <div class="tab" id="tab-schedule">
   <div class="week-nav">
-    <button class="week-nav-btn" onclick="changeWeek(-1)">‹</button>
+    <button class="week-nav-btn" onclick="haptic();changeWeek(-1)">‹</button>
     <div class="week-range" id="weekRange"></div>
-    <button class="week-nav-btn" onclick="changeWeek(1)">›</button>
+    <button class="week-nav-btn" onclick="haptic();changeWeek(1)">›</button>
   </div>
   <div class="day-cards" id="dayCards"></div>
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" id="nav-plan" onclick="switchTab('plan')">
+  <button class="nav-btn active" id="nav-plan" onclick="haptic();switchTab('plan')">
     <span class="nav-icon">🗓</span>
     <span>Plan</span>
     <span class="nav-dot"></span>
   </button>
-  <button class="nav-btn" id="nav-schedule" onclick="switchTab('schedule')">
+  <button class="nav-btn" id="nav-schedule" onclick="haptic();switchTab('schedule')">
     <span class="nav-icon">📅</span>
     <span>Schedule</span>
     <span class="nav-dot"></span>
   </button>
-  <button class="nav-btn" id="nav-clients" onclick="switchTab('clients')">
+  <button class="nav-btn" id="nav-clients" onclick="haptic();switchTab('clients')">
     <span class="nav-icon">👥</span>
     <span>Clients</span>
     <span class="nav-dot"></span>
@@ -881,8 +933,71 @@
   const LAT=36.37, LON=-94.21;
   let jobs=[], jobId=0, ncd='medium';
   const now=new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('dayDisplay').textContent=
-    `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+    `${greeting} · ${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+
+  // Export / Import
+  function exportData(){
+    var keys=['lucy-clients','lucy-start','lucy-actuals','lucy-skips'];
+    var data={version:1,exported:new Date().toISOString(),data:{}};
+    keys.forEach(function(k){
+      var v=localStorage.getItem(k);
+      if(v) data.data[k]=v;
+    });
+    var json=JSON.stringify(data,null,2);
+    // iOS Safari: open as text in new tab so user can save to Files
+    var blob=new Blob([json],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='lucy-planner-backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showDataMsg('Data exported. Save the file somewhere safe.','ok');
+  }
+
+  function importData(input){
+    var file=input.files[0];
+    if(!file){return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var parsed=JSON.parse(e.target.result);
+        if(!parsed.data){throw new Error('Invalid file');}
+        var keys=Object.keys(parsed.data);
+        keys.forEach(function(k){
+          if(k.startsWith('lucy-')) localStorage.setItem(k,parsed.data[k]);
+        });
+        showDataMsg('Data imported successfully. Reloading…','ok');
+        setTimeout(function(){window.location.reload();},1500);
+      }catch(err){
+        showDataMsg('Could not read file. Make sure it is a Lucy Planner backup.','err');
+      }
+    };
+    reader.readAsText(file);
+    input.value='';
+  }
+
+  function showDataMsg(msg,type){
+    var el=document.getElementById('dataMsg');
+    el.textContent=msg;
+    el.style.display='block';
+    el.style.color=type==='ok'?'var(--rose-light)':'#E8956A';
+    setTimeout(function(){el.style.display='none';},4000);
+  }
+
+    // Haptic feedback
+  function haptic(style){
+    if(!style) style='light';
+    try{
+      if(window.navigator&&window.navigator.vibrate){
+        var dur = style==='heavy'?30:style==='medium'?15:8;
+        window.navigator.vibrate(dur);
+      }
+    }catch{}
+  }
 
   // Storage
   function getClients(){try{return JSON.parse(localStorage.getItem('lucy-clients')||'[]');}catch{return[];}}
@@ -994,7 +1109,7 @@
   }
   function renderRoster(){
     const cl=getClients(),el=document.getElementById('clientRoster');
-    if(!cl.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🌸</div>No clients saved yet.<br>Add your first client above.</div>`;return;}
+    if(!cl.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🌸</div><div style="font-weight:500;color:var(--cream);margin-bottom:6px;">No clients yet</div>Add your first client above and set a recurring schedule — then the Schedule tab will plan your week automatically.</div>`;return;}
     el.innerHTML=cl.map(function(c){
       var notesHtml = c.notes
         ? '<div class="client-card-notes">'+esc(c.notes)+'</div>'
@@ -1166,14 +1281,31 @@
       return{mins,reason:'Weekend — minimal traffic. Roads should be clear all day.'+wxN};
     }
 
+    // School zones: roughly Sep–May on weekdays only
+    // Month is 0-indexed: 8=Sep, 4=May, 5=Jun, 6=Jul, 7=Aug
+    var mo = now.getMonth();
+    var schoolInSession = (mo >= 8 || mo <= 4); // Sep(8) through May(4)
+    // Late May (after ~20th) schools often out — soften language
+    var lateMay = (mo === 4 && now.getDate() >= 20);
+
     if(mins<6*60+30)
       return{mins,reason:'Very early start — roads are quiet and I-49 is clear. Best window of the day.'+wxN};
-    if(mins<7*60)
-      return{mins,reason:'Roads are still light, but school zones in Bentonville and Rogers activate around 7 AM on school days. Watch for reduced speed limits near schools.'+wxN};
-    if(mins<7*60+30)
-      return{mins,reason:'Morning traffic is building on I-49 and 71B. School zones are active 7–8:15 AM — allow extra time near Bentonville and Rogers schools.'+wxP};
-    if(mins<=9*60)
-      return{mins:9*60+15,reason:'Peak congestion window — I-49 and 71B are heavily backed up 7:30–9 AM. School zones also active. Pushing to 9:15 skips both and saves real time.'+wxP};
+    if(mins<7*60){
+      var reason = 'Roads are still light before the morning rush builds on I-49 and 71B.';
+      if(schoolInSession && !lateMay) reason += ' School zones activate around 7 AM — watch for reduced speed limits near schools.';
+      return{mins,reason:reason+wxN};
+    }
+    if(mins<7*60+30){
+      var reason = 'Morning traffic is building on I-49 and 71B.';
+      if(schoolInSession && !lateMay) reason += ' School zones are active 7–8:15 AM — allow extra time near Bentonville and Rogers schools.';
+      else reason += ' Traffic typically builds through this window on weekdays.';
+      return{mins,reason:reason+wxP};
+    }
+    if(mins<=9*60){
+      var reason = 'Peak congestion window — I-49 and 71B are heavily backed up 7:30–9 AM. Pushing to 9:15 skips the worst of it and saves real time.';
+      if(schoolInSession && !lateMay) reason = 'Peak congestion window — I-49 and 71B are heavily backed up 7:30–9 AM. School zones also active. Pushing to 9:15 skips both and saves real time.';
+      return{mins:9*60+15,reason:reason+wxP};
+    }
     if(mins<9*60+15)
       return{mins:9*60+15,reason:'Traffic is just starting to clear. Waiting until 9:15 avoids the tail end of the morning rush entirely.'+wxN};
     if(mins<11*60+30)
@@ -1182,10 +1314,16 @@
       return{mins,reason:'Midday traffic is picking up — lunch hour brings extra congestion around Walmart HQ, the Bentonville square, and Rogers town center.'+wxN};
     if(mins<14*60+30)
       return{mins,reason:'Post-lunch window is reasonable. Traffic has calmed from the noon rush and the afternoon buildup has not started yet.'+wxN};
-    if(mins<15*60)
-      return{mins:15*60+45,reason:'School zones reactivate around 3 PM in Bentonville and Rogers, and the Walmart HQ shift change hits at the same time. Pushing to 3:45 avoids both.'+wxP};
-    if(mins<15*60+45)
-      return{mins:15*60+45,reason:'You are in the worst overlap — school dismissal and Walmart shift change together. Pushing to 3:45 is worth it.'+wxP};
+    if(mins<15*60){
+      var reason = 'Walmart HQ shift change causes Bentonville congestion around 3 PM. Pushing to 3:45 avoids it.';
+      if(schoolInSession && !lateMay) reason = 'School zones reactivate around 3 PM in Bentonville and Rogers, and the Walmart HQ shift change hits at the same time. Pushing to 3:45 avoids both.';
+      return{mins:15*60+45,reason:reason+wxP};
+    }
+    if(mins<15*60+45){
+      var reason = 'Walmart HQ shift change is still clearing — pushing to 3:45 gets you past the worst of it.';
+      if(schoolInSession && !lateMay) reason = 'School dismissal and Walmart shift change overlap here. Pushing to 3:45 is worth it.';
+      return{mins:15*60+45,reason:reason+wxP};
+    }
     if(mins<18*60)
       return{mins,reason:'Afternoon rush is running on I-49 — expect slower traffic between Bentonville and Rogers until around 6 PM. Allow extra buffer between jobs.'+wxP};
     return{mins,reason:'Evening traffic has cleared. Roads should be smooth at this hour.'+wxN};
