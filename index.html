@@ -935,8 +935,6 @@
   const now=new Date();
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('dayDisplay').textContent=
-    `${greeting} · ${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
 
   // Export / Import
   function exportData(){
@@ -1234,6 +1232,8 @@
   }
   // Safe init after DOM ready
   function initApp(){
+    document.getElementById('dayDisplay').textContent=
+      `${greeting} · ${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
     restoreStart();
     addJob();
     addJob();
