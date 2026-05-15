@@ -555,10 +555,77 @@
     background:rgba(201,133,122,.15); border-color:var(--rose);
     color:var(--rose-light);
   }
-  .sched-biweekly-note {
-    font-size:11px; color:var(--muted); margin-top:8px;
-    font-style:italic; line-height:1.5;
+  /* Notes */
+  .notes-input {
+    resize:vertical; min-height:70px; line-height:1.5;
+    font-family:'Outfit',sans-serif;
   }
+  .client-card-notes {
+    font-size:12px; color:var(--muted); margin-top:6px;
+    line-height:1.5; font-style:italic;
+    padding:8px 10px; background:rgba(255,255,255,0.03);
+    border-radius:8px; border:1px solid rgba(255,255,255,0.05);
+  }
+  .job-notes-display {
+    font-size:12px; color:var(--rose-light); margin-top:10px;
+    padding:8px 10px; background:var(--rose-bg);
+    border-radius:8px; border:1px solid var(--rose-dim);
+    line-height:1.5;
+  }
+  .day-job-notes {
+    font-size:11px; color:var(--muted); margin-top:2px;
+    font-style:italic; line-height:1.4;
+  }
+
+  /* Tap target improvements */
+  .diff-btn { min-height:44px; }
+  .sched-freq-btn { min-height:44px; }
+  .sched-day-btn { min-height:44px; }
+  .nav-btn { min-height:56px; }
+  .week-nav-btn { min-height:44px; min-width:44px; }
+  .skip-btn { min-height:36px; padding:6px 12px; }
+  .day-plan-btn { min-height:44px; }
+  .actual-btn { min-height:36px; padding:7px 10px; }
+  .job-remove { min-width:36px; min-height:36px; }
+  .client-delete { min-width:36px; min-height:36px; }
+  .sched-flip-btn { min-height:36px; padding:7px 12px; }
+  .add-job-btn { min-height:48px; }
+
+  .sched-biweekly-note {
+    font-size:11px; color:var(--muted);
+    font-style:italic; line-height:1.5; flex:1;
+  }
+  .sched-biweekly-row {
+    display:flex; align-items:center; gap:10px;
+    margin-top:8px;
+  }
+  .sched-flip-btn {
+    padding:5px 10px; border-radius:8px; white-space:nowrap;
+    border:1px solid var(--rose-dim); background:var(--rose-bg);
+    color:var(--rose-light); font-family:'Outfit',sans-serif;
+    font-size:11px; font-weight:500; cursor:pointer;
+    -webkit-appearance:none; transition:background .15s; flex-shrink:0;
+  }
+  .sched-flip-btn:active { background:rgba(201,133,122,0.2); }
+  .sched-next-label {
+    font-size:10px; color:var(--muted); letter-spacing:.08em;
+    text-transform:uppercase; margin-top:10px; margin-bottom:5px;
+  }
+  .sched-next-dates { display:flex; gap:6px; flex-wrap:wrap; }
+  .sched-next-date {
+    font-size:11px; color:var(--cream);
+    background:rgba(255,255,255,0.05); border:1px solid var(--border-soft);
+    border-radius:6px; padding:3px 8px;
+  }
+  .day-job-row.skipped { opacity:0.4; }
+  .day-job-row.skipped .day-job-name { text-decoration:line-through; }
+  .skip-btn {
+    padding:4px 8px; border-radius:7px; white-space:nowrap; flex-shrink:0;
+    border:1px solid rgba(255,255,255,0.1); background:transparent;
+    color:var(--muted2); font-family:'Outfit',sans-serif;
+    font-size:10px; font-weight:500; cursor:pointer; -webkit-appearance:none;
+  }
+  .skip-btn:active { background:var(--rose-bg); color:var(--rose-light); }
 </style>
 </head>
 <body>
@@ -686,7 +753,7 @@
     <div class="section-label">Earliest I can leave</div>
     <div class="time-row">
       <input type="time" class="time-input" id="startTime" value="08:00"
-        oninput="updateDepPreview()" onchange="updateDepPreview()">
+        oninput="window._plannedDow=undefined;updateDepPreview()" onchange="window._plannedDow=undefined;updateDepPreview()">
       <label style="color:var(--muted);font-size:13px;">flexible ±30 min</label>
     </div>
     <div id="depPreview" style="margin-top:12px;"></div>
@@ -760,6 +827,11 @@
           <button class="diff-btn heavy"  id="nc-heavy"  onclick="setNCD('heavy')">💪 Deep Clean</button>
         </div>
       </div>
+      <div class="form-field">
+        <div class="form-label">Notes</div>
+        <textarea class="field-input notes-input" id="nc-notes"
+          placeholder="Gate code, dogs, key location, preferences…" rows="3"></textarea>
+      </div>
       <button class="save-client-btn" onclick="saveNewClient()">Save Client</button>
     </div>
     <div class="section-label" style="margin-bottom:14px;">Saved Clients</div>
@@ -817,6 +889,28 @@
   function saveClients(l){localStorage.setItem('lucy-clients',JSON.stringify(l));}
   function getStart(){try{return JSON.parse(localStorage.getItem('lucy-start')||'{}');}catch{return{};}}
   function saveStart(s,c){localStorage.setItem('lucy-start',JSON.stringify({street:s,city:c}));}
+
+  // Skip storage — keyed by "clientId-dateStr", auto-cleans entries older than 30 days
+  function getSkips(){try{return JSON.parse(localStorage.getItem('lucy-skips')||'{}');}catch{return{};}}
+  function saveSkips(o){localStorage.setItem('lucy-skips',JSON.stringify(o));}
+  function cleanSkips(){
+    var skips=getSkips(), now30=new Date();
+    now30.setDate(now30.getDate()-30);
+    var cutoff=isoDate(now30);
+    var cleaned={};
+    Object.keys(skips).forEach(function(k){
+      var parts=k.split('-').slice(1).join('-'); // extract date portion
+      if(parts>=cutoff) cleaned[k]=skips[k];
+    });
+    saveSkips(cleaned);
+  }
+  function isSkipped(clientId, dateStr){ return !!getSkips()[clientId+'-'+dateStr]; }
+  function toggleSkip(clientId, dateStr){
+    var skips=getSkips(), key=clientId+'-'+dateStr;
+    if(skips[key]) delete skips[key]; else skips[key]=true;
+    saveSkips(skips);
+    renderScheduleTab();
+  }
 
   // Tab
   function switchTab(n){
@@ -880,12 +974,14 @@
     const street=document.getElementById('nc-street').value.trim();
     const ce=document.getElementById('nc-city');
     const city=ce.value==='other'?(document.getElementById('nc-city-other').value.trim()):ce.value;
+    const notes=document.getElementById('nc-notes').value.trim();
     if(!name||!street||!city){alert('Please fill in name, street and city.');return;}
     const cl=getClients();
-    cl.push({id:Date.now(),name,street,city,difficulty:ncd});
+    cl.push({id:Date.now(),name,street,city,difficulty:ncd,notes});
     saveClients(cl);
     document.getElementById('nc-name').value='';
     document.getElementById('nc-street').value='';
+    document.getElementById('nc-notes').value='';
     ce.value='';
     document.getElementById('nc-city-other').classList.remove('show');
     setNCD('medium');
@@ -900,10 +996,14 @@
     const cl=getClients(),el=document.getElementById('clientRoster');
     if(!cl.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🌸</div>No clients saved yet.<br>Add your first client above.</div>`;return;}
     el.innerHTML=cl.map(function(c){
+      var notesHtml = c.notes
+        ? '<div class="client-card-notes">'+esc(c.notes)+'</div>'
+        : '';
       return '<div class="client-card">'
         +'<div class="client-card-name">'+esc(c.name)+'</div>'
         +'<div class="client-card-addr">'+esc(c.street)+', '+esc(c.city)+', AR</div>'
         +'<span class="client-card-type '+c.difficulty+'">'+DIFF_LABEL[c.difficulty]+'</span>'
+        + notesHtml
         +'<button class="client-delete" onclick="deleteClient('+c.id+')">×</button>'
         +renderClientScheduleEditor(c)
         +'</div>';
@@ -933,7 +1033,7 @@
     const m=card.id.match(/jcard-(\d+)/);
     if(!m)return;
     const jid=parseInt(m[1]);
-    jobs=jobs.map(j=>j.id!==jid?j:{...j,name:c.name,street:c.street,city:c.city,difficulty:c.difficulty});
+    jobs=jobs.map(j=>j.id!==jid?j:{...j,name:c.name,street:c.street,city:c.city,difficulty:c.difficulty,notes:c.notes||''});
     list.classList.remove('show');
     renderJobs();
   }
@@ -1161,10 +1261,12 @@
   }
 
   function updateDepPreview(){
+    updateDepPreviewForDow(window._plannedDow !== undefined ? window._plannedDow : now.getDay());
+  }
+  function updateDepPreviewForDow(dow){
     const val = document.getElementById('startTime').value;
     if(!val) return;
     const mins = timeToMins(val);
-    const dow = now.getDay();
     const dep = recommendDep(mins, dow);
     const el = document.getElementById('depPreview');
     if(!el) return;
@@ -1319,26 +1421,35 @@
 
   function planFromSchedule(dateStr){
     var date = new Date(dateStr+'T12:00:00');
-    var scheduled = getClientsForDate(date);
-    if(!scheduled.length){alert('No clients scheduled for this day.');return;}
-    // Reset jobs and load from schedule
+    // Filter out skipped clients for this date
+    var scheduled = getClientsForDate(date).filter(function(c){
+      return !isSkipped(c.id, dateStr);
+    });
+    if(!scheduled.length){alert('No clients scheduled for this day (or all are skipped).');return;}
     jobs = [];
     jobId = 0;
     scheduled.forEach(function(c){
-      jobs.push({id:++jobId,name:c.name,street:c.street,city:c.city,cityOther:'',difficulty:c.difficulty});
+      jobs.push({id:++jobId,name:c.name,street:c.street,city:c.city,cityOther:'',difficulty:c.difficulty,notes:c.notes||''});
     });
-    // Switch to plan tab and re-render
+    // Store the planned date's DOW so departure advice uses correct day
+    window._plannedDow = date.getDay();
     switchTab('plan');
     renderJobs();
-    window.scrollTo({top:0,behavior:'smooth'});
+    // Update departure preview with correct day of week
+    setTimeout(function(){
+      updateDepPreviewForDow(date.getDay());
+      var section = document.querySelector('#tab-plan .section');
+      if(section) section.scrollIntoView({behavior:'smooth',block:'start'});
+    }, 100);
   }
 
   function renderScheduleTab(){
+    cleanSkips();
     var dates = getWeekDates(schedWeekOffset);
     var todayStr = isoDate(now);
 
     // Week range header
-    var first = dates[0], last = dates[5];
+    var first = dates[0], last = dates[6];
     var rangeStr = MONTHS[first.getMonth()]+' '+first.getDate();
     if(first.getMonth()!==last.getMonth()) rangeStr += ' – '+MONTHS[last.getMonth()]+' '+last.getDate();
     else rangeStr += '–'+last.getDate();
@@ -1365,16 +1476,24 @@
         html += '<div class="day-empty">No jobs scheduled</div>';
       } else {
         html += '<div class="day-jobs">';
+        var allSkipped = true;
         dayClients.forEach(function(c){
-          html += '<div class="day-job-row">';
+          var skipped = isSkipped(c.id, ds);
+          if(!skipped) allSkipped = false;
+          html += '<div class="day-job-row'+(skipped?' skipped':'')+'">';
           html += '<span class="day-job-icon">'+DIFF_EMOJI[c.difficulty]+'</span>';
           html += '<div class="day-job-info">';
           html += '<div class="day-job-name">'+esc(c.name)+'</div>';
           html += '<div class="day-job-type">'+DIFF_LABEL[c.difficulty]+'</div>';
-          html += '</div></div>';
+          html += '</div>';
+          html += '<button class="skip-btn" onclick="toggleSkip('+c.id+',&quot;'+ds+'&quot;)">'
+            +(skipped?'Restore':'Skip')+'</button>';
+          html += '</div>';
         });
         html += '</div>';
-        html += '<button class="day-plan-btn" onclick="planFromSchedule(&quot;'+ds+'&quot;)">Plan this day →</button>';
+        if(!allSkipped){
+          html += '<button class="day-plan-btn" onclick="planFromSchedule(&quot;'+ds+'&quot;)">Plan this day →</button>';
+        }
       }
       html += '</div>';
     });
@@ -1398,6 +1517,39 @@
         if(idx>=0)days.splice(idx,1); else days.push(value);
         c.schedule.days=days;
       }
+      return c;
+    });
+    saveClients(clients);
+    renderRoster();
+  }
+
+  function getNextOccurrences(sched, count){
+    // Returns next N occurrence dates as strings
+    var results=[];
+    if(!sched||sched.frequency==='none'||!sched.days||!sched.days.length) return results;
+    var d=new Date(now);
+    d.setHours(0,0,0,0);
+    var limit=200; // max days to scan
+    while(results.length<count && limit-->0){
+      d.setDate(d.getDate()+1);
+      if(!sched.days.includes(d.getDay())) continue;
+      if(sched.frequency==='weekly'){ results.push(new Date(d)); continue; }
+      if(sched.frequency==='biweekly'){
+        var ref=sched.biweeklyRef||isoDate(getMondayOfWeek(now));
+        if(isOnWeek(ref,d)) results.push(new Date(d));
+      }
+    }
+    return results;
+  }
+
+  function flipBiweeklyRef(clientId){
+    var clients=getClients();
+    clients=clients.map(function(c){
+      if(c.id!==clientId) return c;
+      if(!c.schedule) return c;
+      var ref=new Date((c.schedule.biweeklyRef||isoDate(getMondayOfWeek(now)))+'T12:00:00');
+      ref.setDate(ref.getDate()+7);
+      c.schedule.biweeklyRef=isoDate(ref);
       return c;
     });
     saveClients(clients);
@@ -1428,8 +1580,23 @@
         html+='<button class="sched-day-btn'+act+'" onclick="updateClientSchedule('+cid+',&quot;day&quot;,'+dow+')">'+lbl+'</button>';
       });
       html+='</div>';
+
+      // Show next occurrences preview
+      var next=getNextOccurrences(sched,4);
+      if(next.length){
+        html+='<div class="sched-next-label">Next visits:</div>';
+        html+='<div class="sched-next-dates">';
+        next.forEach(function(d){
+          html+='<span class="sched-next-date">'+DAY_NAMES[d.getDay()]+' '+MONTHS[d.getMonth()].slice(0,3)+' '+d.getDate()+'</span>';
+        });
+        html+='</div>';
+      }
+
       if(freq==='biweekly'){
-        html+='<div class="sched-biweekly-note">Every other week. This week is an &quot;on&quot; week when you first set this up. Use the Schedule tab arrows to verify.</div>';
+        html+='<div class="sched-biweekly-row">';
+        html+='<div class="sched-biweekly-note">Every other week — does this look right?</div>';
+        html+='<button class="sched-flip-btn" onclick="flipBiweeklyRef('+cid+')">Shift by one week</button>';
+        html+='</div>';
       }
     }
     html+='</div>';
